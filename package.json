@@ -1,0 +1,27 @@
+{
+  "name": "hidden-gems",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hidden Gems — Uncover Kathmandu's Best-Kept Secrets.",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n frontend,backend -c green,blue \"npm:dev:frontend\" \"npm:dev:backend\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "start:backend": "npm run start --workspace=backend",
+    "seed": "npm run seed --workspace=backend",
+    "test:backend": "npm test --workspace=backend",
+    "build": "npm run build --workspace=frontend",
+    "test": "npm run test:backend && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "nodemon": "3.1.11"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
