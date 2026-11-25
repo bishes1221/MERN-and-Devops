@@ -159,7 +159,8 @@ export function AuthPage({ mode }) {
       toast.success(register ? "Welcome to the neighborhood!" : "Welcome back!");
       navigate("/dashboard");
     } catch (error) {
-      toast.error(error.response?.data?.message || (isNetworkError(error) ? "The API is unavailable. Please try again when it’s online." : "We couldn’t sign you in. Check your details and try again."));
+      const message = error.response?.data?.message || (isNetworkError(error) ? "The API is unavailable. Please try again when it’s online." : "We couldn’t sign you in. Check your details and try again.");
+      toast.error(message, { id: isNetworkError(error) ? "auth-api-unavailable" : "auth-error" });
     }
   };
   return <main className="auth-page"><div className="auth-visual"><img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&w=1100&q=88" alt="Colorful Kathmandu streets" /><div className="auth-visual-copy"><span>THE BEST PLACES</span><h2>Are the ones<br />you stumble upon.</h2><p>A little local knowledge goes a long way.</p></div></div><section className="auth-form-wrap"><Link to="/" className="back-link"><ArrowLeft size={16} /> Back home</Link><div className="auth-form-inner"><p className="eyebrow">{register ? "PULL UP A CHAIR" : "GOOD TO SEE YOU"}</p><h1>{register ? "Join the neighborhood." : "Welcome back."}</h1><p className="intro-copy">{register ? "Create an account and start finding your own Kathmandu." : "Your next favorite place is waiting."}</p>
