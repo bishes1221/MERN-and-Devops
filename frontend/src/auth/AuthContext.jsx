@@ -13,6 +13,7 @@ export function AuthProvider({ children }) {
       const { data } = await api.get("/auth/me");
       setUser(data.user || null);
       setApiUnavailable(false);
+      return true;
     } catch (error) {
       if (error.response?.status === 401) {
         setUser(null);
@@ -20,10 +21,12 @@ export function AuthProvider({ children }) {
       } else if (isNetworkError(error) || error.response?.status >= 500) {
         setUser(null);
         setApiUnavailable(true);
+        return false;
       } else {
         setUser(null);
         setApiUnavailable(false);
       }
+      return true;
     } finally {
       setLoading(false);
     }
@@ -31,21 +34,34 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     let active = true;
-    api.get("/health").then(({ data }) => {
-      if (!active) return;
-      if (!data.databaseReady) {
+    let retryTimer;
+    const checkHealth = async () => {
+      try {
+        const { data } = await api.get("/health");
+        if (!active) return;
+        if (!data.databaseReady) {
+          setApiUnavailable(true);
+          setLoading(false);
+          retryTimer = window.setTimeout(checkHealth, 5000);
+          return;
+        }
+        setApiUnavailable(false);
+        const authAvailable = await refreshUser();
+        if (active && !authAvailable) {
+          retryTimer = window.setTimeout(checkHealth, 5000);
+        }
+      } catch {
+        if (!active) return;
         setApiUnavailable(true);
         setLoading(false);
-        return;
+        retryTimer = window.setTimeout(checkHealth, 5000);
       }
-      setApiUnavailable(false);
-      refreshUser();
-    }).catch(() => {
-      if (!active) return;
-      setApiUnavailable(true);
-      setLoading(false);
-    });
-    return () => { active = false; };
+    };
+    void checkHealth();
+    return () => {
+      active = false;
+      window.clearTimeout(retryTimer);
+    };
   }, [refreshUser]);
 
   const authenticate = async (path, values) => {
